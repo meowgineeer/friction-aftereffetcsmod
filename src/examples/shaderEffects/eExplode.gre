@@ -1,0 +1,39 @@
+<!-- enve - 2D animations software -->
+<!-- Copyright (C) 2016-2020 Maurycy Liebner -->
+
+<!-- This program is free software: you can redistribute it and/or modify -->
+<!-- it under the terms of the GNU General Public License as published by -->
+<!-- the Free Software Foundation, either version 3 of the License, or -->
+<!-- (at your option) any later version. -->
+
+<!-- This program is distributed in the hope that it will be useful, -->
+<!-- but WITHOUT ANY WARRANTY; without even the implied warranty of -->
+<!-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the -->
+<!-- GNU General Public License for more details. -->
+
+<!-- You should have received a copy of the GNU General Public License -->
+<!-- along with this program.  If not, see <http://www.gnu.org/licenses/>. -->
+
+<ShaderEffect name="Explode" menuPath="Examples">
+    <Properties>
+        <Property name="displacement" type="vec2" min="0" max="999" step="1" ini="10" resolutionScaled="true" influenceScaled="true"/>
+        <Property name="steps"        type="int"  min="1" max="99"  step="1" ini="1"  glValue="true"/>
+        <Property name="directions"   type="int"  min="1" max="99"  step="1" ini="6"  glValue="true"/>
+    </Properties>
+
+    <Script>
+        <Calculate>
+            var hDispl = displacement[0];
+            var vDispl = displacement[1];
+            var widthWithMargin = 2*hDispl + _eRect[2];
+            var heightWithMargin = 2*vDispl + _eRect[3];
+            extern displScaled = [hDispl/widthWithMargin, vDispl/heightWithMargin];
+        </Calculate>
+    </Script>
+
+    <glValues>
+        <glValue name="displacementXY"  type="vec2" value="displScaled"/>
+    </glValues>
+
+    <Margin value="displacement"/>
+</ShaderEffect>
