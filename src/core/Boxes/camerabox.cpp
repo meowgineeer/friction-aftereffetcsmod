@@ -1,4 +1,5 @@
 #include "camerabox.h"
+#include "boxrenderdata.h"
 #include "Animators/transformanimator.h"
 
 CameraBox::CameraBox() : BoundingBox("Camera", eBoxType::camera) {
@@ -10,4 +11,8 @@ SkM44 CameraBox::getCameraMatrix(const qreal relFrame) const {
         return mTransformAnimator->getTotalTransform3DAtFrame(relFrame);
     }
     return SkM44();
+}
+
+stdsptr<BoxRenderData> CameraBox::createRenderData() {
+    return nullptr;
 }
