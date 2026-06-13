@@ -120,7 +120,7 @@ Canvas::~Canvas()
 }
 
 CameraBox* Canvas::getActiveCamera() const {
-    for (const auto& child : fChildren) {
+    for (const auto& child : getContained()) {
         auto camera = enve_cast<CameraBox*>(child.get());
         if (camera) {
             return camera;
