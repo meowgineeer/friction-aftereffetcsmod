@@ -1,7 +1,7 @@
 #include "camerabox.h"
 #include "Animators/transformanimator.h"
 
-CameraBox::CameraBox() : BoundingBox("Camera") {
+CameraBox::CameraBox() : BoundingBox("Camera", eBoxType::camera) {
     // Zoom / Focal length property can be added here
 }
 

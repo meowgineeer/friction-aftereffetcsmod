@@ -10,7 +10,7 @@ public:
     
     SkM44 getCameraMatrix(const qreal relFrame) const;
     
-    virtual qsptr<BoxRenderData> createRenderData() override {
+    virtual stdsptr<BoxRenderData> createRenderData() override {
         return nullptr; // Camera doesn't render itself
     }
     virtual HardwareSupport hardwareSupport() const override {

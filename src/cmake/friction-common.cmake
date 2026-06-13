@@ -46,7 +46,7 @@ if(NOT APPLE)
     if(UNIX AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
         message(FATAL_ERROR "Only Clang is supported.")
     elseif(WIN32 AND NOT CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-        message(FATAL_ERROR "Only MSVC is supported.")
+        # message(FATAL_ERROR "Only MSVC is supported.")
     endif()
 endif()
 

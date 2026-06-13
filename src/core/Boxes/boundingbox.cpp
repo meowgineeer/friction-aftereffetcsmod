@@ -1129,7 +1129,7 @@ void BoundingBox::setupWithoutRasterEffects(const qreal relFrame,
                 SkM44 camMatrix = camera->getCameraMatrix(relFrame);
                 SkM44 invCam;
                 if (camMatrix.invert(&invCam)) {
-                    data->fTotalTransform3D = invCam * data->fTotalTransform3D;
+                    data->fTotalTransform3D.postConcat(invCam);
                 }
             }
         }
