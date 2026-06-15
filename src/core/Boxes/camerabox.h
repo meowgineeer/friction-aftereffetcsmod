@@ -7,6 +7,8 @@ class CORE_EXPORT CameraBox : public BoundingBox {
     e_OBJECT
 public:
     CameraBox();
+    ~CameraBox() override;
+
     
     SkM44 getCameraMatrix(const qreal relFrame) const;
     
