@@ -52,7 +52,8 @@ mkdir output
 
 cmake -G "Visual Studio 17 2022" -A x64 -DCMAKE_BUILD_TYPE=%BTYPE% -DCMAKE_PREFIX_PATH=%SDK_DIR% -DCUSTOM_BUILD=%CBUILD% -DBUILD_SKIA=OFF -DFRICTION_OFFICIAL_RELEASE=%REL% -DWIN_DEPLOY=ON -DGIT_COMMIT=%COMMIT% -DGIT_BRANCH=%BRANCH% ..
 set /p VERSION=<version.txt
-cmake --build . --config %BTYPE%
+cmake --build . --config %BTYPE% > ..\build_log.txt 2>&1
+if %errorlevel% neq 0 exit /b %errorlevel%
 
 if "%REL%" == "OFF" (
     set VERSION="%VERSION%-%COMMIT%"
