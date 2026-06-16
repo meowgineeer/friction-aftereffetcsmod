@@ -5,6 +5,7 @@
 
 class CORE_EXPORT CameraBox : public BoundingBox {
     e_OBJECT
+    e_DECLARE_TYPE(CameraBox)
 public:
     CameraBox();
     ~CameraBox() override;

@@ -41,7 +41,7 @@ void BoxRenderData::transformRenderCanvas(SkCanvas &canvas) const {
                      toSkScalar(-fGlobalRect.y()));
     
     SkM44 matrix = fTotalTransform3D;
-    matrix.preScale(fResolutionScale.m11(), fResolutionScale.m22(), 1.0f);
+    matrix.preConcat(SkM44::Scale(fResolutionScale.m11(), fResolutionScale.m22(), 1.0f));
     canvas.concat(matrix);
 }
 

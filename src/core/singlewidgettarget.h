@@ -54,6 +54,8 @@ class ContainerBox;
 class Canvas;
 class InternalLinkBox;
 class PathBox;
+class MaskBox;
+class CameraBox;
 //class PaintBox;
 class SmartVectorPath;
 class BlendEffectBoxShadow;
@@ -124,6 +126,8 @@ public:
     e_DECLARE_TYPE_FUNCTION(Canvas)
     e_DECLARE_TYPE_FUNCTION(InternalLinkBox)
     e_DECLARE_TYPE_FUNCTION(PathBox)
+    e_DECLARE_TYPE_FUNCTION(MaskBox)
+    e_DECLARE_TYPE_FUNCTION(CameraBox)
     //e_DECLARE_TYPE_FUNCTION(PaintBox)
     e_DECLARE_TYPE_FUNCTION(SmartVectorPath)
     e_DECLARE_TYPE_FUNCTION(BlendEffectBoxShadow)

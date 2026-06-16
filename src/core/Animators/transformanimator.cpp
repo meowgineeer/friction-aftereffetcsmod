@@ -207,9 +207,9 @@ QMatrix BasicTransformAnimator::getRelativeTransformAtFrame(
 SkM44 BasicTransformAnimator::getRelativeTransform3DAtFrame(const qreal relFrame, SkM44* postTransform) const {
     Q_UNUSED(postTransform)
     SkM44 matrix;
-    matrix.preTranslate(mPosAnimator->getEffectiveXValue(relFrame),
+    matrix.preConcat(SkM44::Translate(mPosAnimator->getEffectiveXValue(relFrame),
                         mPosAnimator->getEffectiveYValue(relFrame),
-                        mZDepthAnimator ? mZDepthAnimator->getEffectiveValue(relFrame) : 0.0);
+                        mZDepthAnimator ? mZDepthAnimator->getEffectiveValue(relFrame) : 0.0));
 
     qreal rotZ = mRotAnimator->getEffectiveValue(relFrame);
     qreal rotX = mXRotAnimator ? mXRotAnimator->getEffectiveValue(relFrame) : 0.0;
@@ -219,7 +219,7 @@ SkM44 BasicTransformAnimator::getRelativeTransform3DAtFrame(const qreal relFrame
     matrix.preConcat(SkM44::Rotate({0, 1, 0}, qDegreesToRadians(rotY)));
     matrix.preConcat(SkM44::Rotate({1, 0, 0}, qDegreesToRadians(rotX)));
 
-    matrix.preScale(mScaleAnimator->getEffectiveXValue(relFrame),
+    matrix.preConcat(SkM44::Scale(mScaleAnimator->getEffectiveXValue(relFrame),
                     mScaleAnimator->getEffectiveYValue(relFrame), 1.0f);
     return matrix;
 }

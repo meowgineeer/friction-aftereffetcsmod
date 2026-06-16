@@ -44,6 +44,7 @@
 #include "ReadWrite/evformat.h"
 #include "internallinkbox.h"
 #include "maskbox.h"
+#include "camerabox.h"
 
 class FlipBookProperty : public BoolPropertyContainer {
     e_OBJECT
@@ -489,7 +490,7 @@ void ContainerBox::prp_setupTreeViewMenu(PropertyMenu * const menu) {
         mask->prp_setNameAction("Mask");
         box->addContained(mask);
     };
-    menu->addAction("Add Mask", addMaskOp);
+    menu->addPlainAction(QIcon(), "Add Mask", addMaskOp);
 
     const PropertyMenu::PlainSelectedOp<ContainerBox> addCameraOp =
     [](ContainerBox* const box) {
@@ -497,7 +498,7 @@ void ContainerBox::prp_setupTreeViewMenu(PropertyMenu * const menu) {
         camera->prp_setNameAction("Camera");
         box->addContained(camera);
     };
-    menu->addAction("Add Camera", addCameraOp);
+    menu->addPlainAction(QIcon(), "Add Camera", addCameraOp);
 
     menu->addSeparator();
 
@@ -1598,6 +1599,7 @@ void ContainerBox::writeBoxOrSoundXEV(const stdsptr<XevZipFileSaver>& xevFileSav
 #include "svglinkbox.h"
 #include "nullobject.h"
 #include "maskbox.h"
+#include "camerabox.h"
 #include "camerabox.h"
 
 qsptr<BoundingBox> createBoxOfNonCustomType(const eBoxType type) {
