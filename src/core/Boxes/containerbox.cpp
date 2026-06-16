@@ -1096,7 +1096,7 @@ void ContainerBox::processChildrenData(const qreal relFrame,
         const auto& box = mContainedBoxes.at(i);
         const qreal boxRelFrame = box->prp_absFrameToRelFrameF(absFrame);
         if (box->getBoxType() == eBoxType::mask) {
-            auto maskBox = static_cast<MaskBox*>(box.get());
+            auto maskBox = static_cast<MaskBox*>(box);
             SkPath clipPath = maskBox->getRelativePath(boxRelFrame);
             clipPath.transform(maskBox->getTransformAnimator()->getMatrixAtRelFrameSk(boxRelFrame));
             groupData->fMasks.append({clipPath, SkClipOp::kIntersect, true});

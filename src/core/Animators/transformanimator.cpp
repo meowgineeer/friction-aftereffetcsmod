@@ -220,7 +220,7 @@ SkM44 BasicTransformAnimator::getRelativeTransform3DAtFrame(const qreal relFrame
     matrix.preConcat(SkM44::Rotate({1, 0, 0}, qDegreesToRadians(rotX)));
 
     matrix.preConcat(SkM44::Scale(mScaleAnimator->getEffectiveXValue(relFrame),
-                    mScaleAnimator->getEffectiveYValue(relFrame), 1.0f);
+                    mScaleAnimator->getEffectiveYValue(relFrame), 1.0f));
     return matrix;
 }
 
