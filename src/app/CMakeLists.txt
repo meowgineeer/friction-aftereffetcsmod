@@ -274,16 +274,28 @@ set(
 set(
     RESOURCES
     resources.qrc
-    icons/hicolor.qrc
 )
+if(NOT WIN32)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/icons/hicolor.qrc)
+        list(APPEND RESOURCES icons/hicolor.qrc)
+    endif()
+endif()
 if(${LINUX_DEPLOY})
-    list(APPEND RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../docs/docs_lin.qrc)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../docs/docs_lin.qrc)
+        list(APPEND RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../docs/docs_lin.qrc)
+    endif()
 elseif(${MAC_DEPLOY})
-    list(APPEND RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../docs/docs_mac.qrc)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../docs/docs_mac.qrc)
+        list(APPEND RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../docs/docs_mac.qrc)
+    endif()
 elseif(${WIN_DEPLOY})
-    list(APPEND RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../docs/docs_win.qrc)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../docs/docs_win.qrc)
+        list(APPEND RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../docs/docs_win.qrc)
+    endif()
 else()
-    list(APPEND RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../docs/docs.qrc)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../docs/docs.qrc)
+        list(APPEND RESOURCES ${CMAKE_CURRENT_SOURCE_DIR}/../../docs/docs.qrc)
+    endif()
 endif()
 
 add_executable(
