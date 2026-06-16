@@ -100,7 +100,8 @@ cd "%BUILD_OUTPUT%"
 7z a -mx9 friction-%VERSION%-windows-x64.7z friction-%VERSION%
 
 copy "%CWD%\build\src\app\%BDIR%\friction.iss" "%OUTPUT_DIR%\"
-copy "%CWD%\src\app\pixmaps\enve.ico" "%OUTPUT_DIR%\friction.ico"
+copy "%CWD%\src\app\icons\friction.ico" "%OUTPUT_DIR%\"
+copy "%CWD%\src\app\icons\friction.bmp" "%OUTPUT_DIR%\"
 copy "%CWD%\LICENSE.md" "%OUTPUT_DIR%\"
 
 cd "%OUTPUT_DIR%"

@@ -26,6 +26,7 @@ SetupIconFile=friction.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
+WizardSmallImageFile=friction.bmp
 WizardImageStretch=yes
 
 [Components]

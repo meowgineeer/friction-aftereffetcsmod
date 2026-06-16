@@ -66,8 +66,7 @@ if(${SKIA_STATIC})
 endif()
 
 if(APPLE)
-    # set(ICON_FILE ${CMAKE_CURRENT_SOURCE_DIR}/icons/${PROJECT_NAME}.icns)
-    set(ICON_FILE "")
+    set(ICON_FILE ${CMAKE_CURRENT_SOURCE_DIR}/icons/friction.icns)
     set(MACOSX_BUNDLE_BUNDLE_NAME "Friction")
     set(MACOSX_BUNDLE_BUNDLE_VERSION ${PROJECT_VERSION})
     set(MACOSX_BUNDLE_LONG_VERSION_STRING ${PROJECT_VERSION})
@@ -75,7 +74,7 @@ if(APPLE)
     set(MACOSX_BUNDLE_COPYRIGHT ${PROJECT_COPYRIGHT})
     set(MACOSX_BUNDLE_GUI_IDENTIFIER ${PROJECT_IDENTIFIER})
     set(MACOSX_BUNDLE_ICON_FILE ${PROJECT_NAME})
-    # set_source_files_properties(${ICON_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    set_source_files_properties(${ICON_FILE} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
     set(CMAKE_INSTALL_RPATH "@executable_path/../Frameworks")
 endif()
 
@@ -114,7 +113,7 @@ if(WIN32)
         ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${FRICTION_NAME}.iss
         @ONLY
     )
-    configure_file(pixmaps/enve.ico
+    configure_file(icons/friction.ico
         ${CMAKE_CURRENT_BINARY_DIR}/${CMAKE_BUILD_TYPE}/${FRICTION_NAME}.ico
         COPYONLY
     )
@@ -275,10 +274,8 @@ set(
     RESOURCES
     resources.qrc
 )
-if(NOT WIN32)
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/icons/hicolor.qrc)
-        list(APPEND RESOURCES icons/hicolor.qrc)
-    endif()
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/icons/hicolor.qrc)
+    list(APPEND RESOURCES icons/hicolor.qrc)
 endif()
 if(${LINUX_DEPLOY})
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/../../docs/docs_lin.qrc)

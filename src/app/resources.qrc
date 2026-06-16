@@ -36,5 +36,12 @@
         <file>presets/render/001-friction-preset-mp4-h264.conf</file>
         <file>xdg/friction.xml</file>
         <file>xdg/friction.desktop</file>
+        <file>icons/hicolor/scalable/apps/graphics.friction.Friction.svg</file>
+        <file alias="icons/splash/splash-00001.png">icons/friction-splash.png</file>
+        <file alias="icons/splash/splash-00002.png">icons/friction-splash.png</file>
+        <file alias="icons/splash/splash-00003.png">icons/friction-splash.png</file>
+        <file alias="icons/splash/splash-00004.png">icons/friction-splash.png</file>
+        <file alias="icons/splash/splash-00005.png">icons/friction-splash.png</file>
+        <file alias="icons/splash/splash-00006.png">icons/friction-splash.png</file>
     </qresource>
 </RCC>
