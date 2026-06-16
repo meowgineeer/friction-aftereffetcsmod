@@ -442,6 +442,7 @@ void MainWindow::updateSettingsForCurrentCanvas(Canvas* const scene)
 
     if (!scene) {
         mObjectSettingsWidget->setMainTarget(nullptr);
+        mEffectControlsWidget->setMainTarget(nullptr);
         mTimeline->updateSettingsForCurrentCanvas(nullptr);
         return;
     }
@@ -594,6 +595,9 @@ void MainWindow::setCurrentBox(BoundingBox *box)
     mColorToolBar->setCurrentBox(box);
     mFillStrokeSettings->setCurrentBox(box);
     mFontWidget->setCurrentBox(box);
+    if (mEffectControlsWidget) {
+        mEffectControlsWidget->setMainTarget(box);
+    }
     setCurrentBoxFocus(box);
 }
 
@@ -953,6 +957,28 @@ void MainWindow::setupPropertiesWidgets()
     mObjectSettingsWidget->setCurrentRule(static_cast<SWT_BoxRule>(defaultRule));
     mObjectSettingsWidget->setCurrentTarget(nullptr, SWT_Target::group);
 
+    // Effect Controls
+    mEffectControlsScrollArea = new ScrollArea(this);
+    mEffectControlsScrollArea->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+    mEffectControlsScrollArea->setAutoFillBackground(true);
+    mEffectControlsScrollArea->setPalette(ThemeSupport::getDarkPalette());
+
+    mEffectControlsWidget = new BoxScrollWidget(mDocument, mEffectControlsScrollArea);
+    mEffectControlsScrollArea->setWidget(mEffectControlsWidget);
+    mEffectControlsWidget->setCurrentRule(SWT_BoxRule::all);
+    mEffectControlsWidget->setCurrentTarget(nullptr, SWT_Target::box);
+
+    mTabLeft = new QTabWidget(this);
+    mTabLeft->setObjectName("TabWidgetWide");
+    mTabLeft->tabBar()->setFocusPolicy(Qt::NoFocus);
+    mTabLeft->setContentsMargins(0, 0, 0, 0);
+    mTabLeft->setTabPosition(QTabWidget::South);
+    eSizesUI::widget.add(mTabLeft, [this](const int size) {
+        mTabLeft->setIconSize(QSize(size, size));
+    });
+    
+    mTabLeft->addTab(mEffectControlsScrollArea, QIcon::fromTheme("graph_property"), tr("Effect Controls"));
+
     // font widget
     mFontWidget = new Ui::FontsWidget(this);
     mFontWidget->setMaximumHeight(150);
@@ -1003,6 +1029,14 @@ void MainWindow::setupPropertiesWidgets()
             mObjectSettingsWidget, &BoxScrollWidget::changeVisibleHeight);
     connect(mObjectSettingsScrollArea, &ScrollArea::widthChanged,
             mObjectSettingsWidget, &BoxScrollWidget::setWidth);
+
+    connect(mEffectControlsScrollArea->verticalScrollBar(),
+            &QScrollBar::valueChanged,
+            mEffectControlsWidget, &BoxScrollWidget::changeVisibleTop);
+    connect(mEffectControlsScrollArea, &ScrollArea::heightChanged,
+            mEffectControlsWidget, &BoxScrollWidget::changeVisibleHeight);
+    connect(mEffectControlsScrollArea, &ScrollArea::widthChanged,
+            mEffectControlsWidget, &BoxScrollWidget::setWidth);
 }
 
 void MainWindow::setupLayout()
@@ -1037,6 +1071,13 @@ void MainWindow::setupLayout()
                      false,
                      true,
                      false});
+    docks.push_back({UIDock::Position::Left,
+                     -1,
+                     tr("Effect Controls"),
+                     mTabLeft,
+                     false,
+                     true,
+                     false});
     mUI->addDocks(docks);
     setCentralWidget(mUI);
 }
@@ -1046,6 +1087,7 @@ void MainWindow::clearAll()
     TaskScheduler::instance()->clearTasks();
     setFileChangedSinceSaving(false);
     mObjectSettingsWidget->setMainTarget(nullptr);
+    mEffectControlsWidget->setMainTarget(nullptr);
 
     mRenderWidget->clearRenderQueue();
     mFillStrokeSettings->clearAll();

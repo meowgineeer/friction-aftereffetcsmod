@@ -311,6 +311,11 @@ private:
     BoxScrollWidget *mObjectSettingsWidget;
     ScrollArea *mObjectSettingsScrollArea;
 
+    QTabWidget *mTabLeft;
+    BoxScrollWidget *mEffectControlsWidget;
+    ScrollArea *mEffectControlsScrollArea;
+
+
     void setupMainWidgets();
     void setupStackWidgets();
     void setupMemoryWidgets();
