@@ -650,9 +650,9 @@ void BoxSingleWidget::loadStaticPixmaps(int iconSize)
     CG_ICON = new QPixmap(QIcon::fromTheme("cpu-gpu").pixmap(pixmapSize));
     GRAPH_PROPERTY_ICON = new QPixmap(QIcon::fromTheme("graph_property_2").pixmap(pixmapSize));
     PROMOTE_TO_LAYER_ICON = new QPixmap(QIcon::fromTheme("layer").pixmap(pixmapSize));
-    STOPWATCH_ICON = new QPixmap(QIcon::fromTheme("stopwatch").pixmap(pixmapSize));
-    EXPRESSION_ICON = new QPixmap(QIcon::fromTheme("expression").pixmap(pixmapSize));
-    CUSTOM_VISIBLE_ICON = new QPixmap(QIcon::fromTheme("visible").pixmap(pixmapSize));
+    STOPWATCH_ICON = new QPixmap(QIcon(":/other/icon_stopwatch.svg").pixmap(pixmapSize));
+    EXPRESSION_ICON = new QPixmap(QIcon(":/other/icon_expression_script.svg").pixmap(pixmapSize));
+    CUSTOM_VISIBLE_ICON = new QPixmap(QIcon(":/other/icon_visibility_eye.svg").pixmap(pixmapSize));
 
     sStaticPixmapsLoaded = true;
 }
