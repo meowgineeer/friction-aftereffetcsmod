@@ -90,7 +90,8 @@ TextBox::TextBox()
     mLetterSpacing = enve::make_shared<QrealAnimator>(0, -100, 100, 0.1, "letters");
     mWordSpacing = enve::make_shared<QrealAnimator>(1, -100, 100, 0.1, "words");
     mLineSpacing = enve::make_shared<QrealAnimator>(1, -100, 100, 0.1, "lines");
-    mIsRTL = enve::make_shared<BoolAnimator>(false, "Right-to-Left");
+    mIsRTL = enve::make_shared<BoolAnimator>("Right-to-Left");
+    mIsRTL->setCurrentBoolValue(false);
 
     mSpacingCont->ca_addChild(mLetterSpacing);
     mSpacingCont->ca_addChild(mWordSpacing);
@@ -214,22 +215,22 @@ void TextBox::setFontSize(const qreal size)
 }
 
 qreal TextBox::getLetterSpacing() const {
-    return mLetterSpacing->getCurrentValue();
+    return mLetterSpacing->getCurrentBaseValue();
 }
 
 void TextBox::setLetterSpacing(qreal spacing) {
     mLetterSpacing->prp_startTransform();
-    mLetterSpacing->setCurrentValue(spacing);
+    mLetterSpacing->setCurrentBaseValue(spacing);
     mLetterSpacing->prp_finishTransform();
 }
 
 bool TextBox::getIsRTL() const {
-    return mIsRTL->getCurrentValue();
+    return mIsRTL->getBoolValue();
 }
 
 void TextBox::setIsRTL(bool ltr) {
     mIsRTL->prp_startTransform();
-    mIsRTL->setCurrentValue(ltr);
+    mIsRTL->setCurrentBoolValue(ltr);
     mIsRTL->prp_finishTransform();
 }
 
@@ -279,11 +280,12 @@ void TextBox::setupRenderData(const qreal relFrame, const QMatrix& parentM,
     const qreal letterSpacing = mLetterSpacing->getEffectiveValue(relFrame);
     const qreal wordSpacing = mWordSpacing->getEffectiveValue(relFrame);
     const qreal lineSpacing = mLineSpacing->getEffectiveValue(relFrame);
+    const bool isRTL = mIsRTL->getEffectiveValue(relFrame);
 
     const auto textData = static_cast<TextBoxRenderData*>(data);
     textData->initialize(textAtFrame, mFont,
                          letterSpacing, wordSpacing, lineSpacing,
-                         mHAlignment, mVAlignment, this, scene);
+                         mHAlignment, mVAlignment, isRTL, this, scene);
     QList<TextEffect*> textEffects;
     mTextEffects->addEffects(textEffects);
     for(const auto textEffect : textEffects) {

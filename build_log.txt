@@ -1,0 +1,9 @@
+CMake Error:
+  Generator
+
+    Visual Studio 18 2026
+
+  could not find any instance of Visual Studio.
+
+
+

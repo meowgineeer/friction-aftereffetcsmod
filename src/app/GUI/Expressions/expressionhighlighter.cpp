@@ -41,11 +41,8 @@ ExpressionHighlighter::ExpressionHighlighter(
     mEditor(editor) {    
     HighlightingRule rule;
 
-    QFont editorFont = mEditor->font();
-
-    mErrorFormat.setFont(editorFont);
     mErrorFormat.setForeground(Qt::red);
-    mAssignFormat.setFont(editorFont);
+    mAssignFormat.setForeground(QColor(255, 128, 128));
     mAssignFormat.setForeground(QColor(255, 128, 128));
 
     const QString propPath = "([a-zA-Z0-9_\\.]+[a-zA-Z0-9_ \\.]*[a-zA-Z0-9_\\.]+)";
@@ -57,7 +54,6 @@ ExpressionHighlighter::ExpressionHighlighter(
                                              "\\s*=\\s*(\\$frame|\\$scene.fps|\\$scene.width|\\$scene.height|\\$scene.rangeMin|\\$scene.rangeMax|\\$value)");
 //    const auto propPathRegex = QRegularExpression(propPath);
 
-    mPropPathFormat.setFont(editorFont);
     mPropPathFormat.setFontWeight(QFont::Bold);
     mPropPathFormat.setForeground(Qt::white);
 //    rule.pattern = propPathRegex;
@@ -75,7 +71,6 @@ ExpressionHighlighter::ExpressionHighlighter(
     };
 
     QTextCharFormat specialFormat;
-    specialFormat.setFont(editorFont);
     specialFormat.setForeground(QColor(185, 255, 155));
     rule.format = specialFormat;
     for(const QString &spec : specs) {
@@ -85,7 +80,6 @@ ExpressionHighlighter::ExpressionHighlighter(
     }
 
     QTextCharFormat commentFormat;
-    commentFormat.setFont(editorFont);
     commentFormat.setForeground(QColor("#666666"));
     rule.pattern = QRegularExpression("\\/\\/.*");;
     rule.format = commentFormat;

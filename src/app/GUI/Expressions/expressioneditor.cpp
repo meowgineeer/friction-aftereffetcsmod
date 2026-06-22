@@ -41,9 +41,9 @@ ExpressionEditor::ExpressionEditor(QrealAnimator * const target,
     : QTextEdit(parent)
 {
     setCursorWidth(2);
-    QFont monoFont = QFontDatabase::systemFont(QFontDatabase::FixedFont);
+    QFont monoFont = font();
+    monoFont.setFamily(QFontDatabase::systemFont(QFontDatabase::FixedFont).family());
     monoFont.setStyleHint(QFont::Monospace);
-    monoFont.setPointSize(parent->font().pointSize());
     setFont(monoFont);
     setMinimumWidth(20*eSizesUI::widget);
     setMaximumHeight(5*eSizesUI::widget);
