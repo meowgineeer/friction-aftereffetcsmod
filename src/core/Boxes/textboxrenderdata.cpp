@@ -27,6 +27,7 @@
 #include "textbox.h"
 #include "PathEffects/patheffectstask.h"
 #include "canvas.h"
+#include "modules/skshaper/include/SkShaper.h"
 
 qreal textLineX(const Qt::Alignment &alignment,
                 const qreal lineWidth,
@@ -57,23 +58,39 @@ qreal horizontalAdvance(const SkFont& font, const QString& str,
     return static_cast<qreal>(result);
 }
 
-qreal horizontalAdvance(const SkFont& font, const QString& str,
-                        const qreal letterSpacing, const qreal wordSpacing) {
-    SkScalar result = font.measureText(str.utf16(),
-                                       str.size()*sizeof(short),
-                                       SkTextEncoding::kUTF16);
+qreal shapedHorizontalAdvance(const SkFont& font, const QString& str,
+                              const qreal letterSpacing, const qreal wordSpacing,
+                              const bool isRTL, SkShaper* shaper) {
+    if (str.isEmpty()) return 0;
+    
+    class WidthRunHandler : public SkShaper::RunHandler {
+    public:
+        SkScalar fTotalAdvance = 0;
+        void beginLine() override {}
+        void runInfo(const RunInfo&) override {}
+        void commitRunInfo() override {}
+        Buffer runBuffer(const RunInfo& info) override { return {nullptr, nullptr, nullptr, nullptr, {0,0}}; }
+        void commitRunBuffer(const RunInfo& info) override {
+            fTotalAdvance += info.fAdvance.fX;
+        }
+        void commitLine() override {}
+    };
+
+    QByteArray utf8 = str.toUtf8();
+    WidthRunHandler runHandler;
+    shaper->shape(utf8.constData(), utf8.size(), font, !isRTL, SK_ScalarMax, &runHandler);
+
+    qreal result = runHandler.fTotalAdvance;
     const qreal fontSize = static_cast<qreal>(font.getSize());
     const int nSpaces = str.count(" ");
     if(nSpaces > 0) {
         const char spaceChar = ' ';
-        const SkScalar space = font.measureText(
-                    &spaceChar, sizeof(char),
-                    SkTextEncoding::kUTF8);
+        const SkScalar space = font.measureText(&spaceChar, sizeof(char), SkTextEncoding::kUTF8);
         result += nSpaces*space*static_cast<SkScalar>(wordSpacing - 1);
     }
     const int nNonSpaces = str.length() - nSpaces;
     result += static_cast<SkScalar>(fontSize*letterSpacing*nNonSpaces);
-    return static_cast<qreal>(result);
+    return result;
 }
 
 LetterRenderData::LetterRenderData(TextBox * const parent) :
@@ -96,7 +113,7 @@ void LetterRenderData::afterQued() {
 
 void LetterRenderData::initialize(const qreal relFrame,
                                   const QPointF &pos,
-                                  const QString &letter,
+                                  const SkGlyphID glyph,
                                   const SkFont &font,
                                   TextBox * const parent,
                                   Canvas * const scene) {
@@ -108,7 +125,8 @@ void LetterRenderData::initialize(const qreal relFrame,
     parent->setupPaintSettings(this, relFrame);
     parent->setupStrokerSettings(this, relFrame);
     SkPath textPath;
-    SkiaHelpers::textToPath(font, pos.x(), pos.y(), letter, textPath);
+    font.getPath(glyph, &textPath);
+    textPath.offset(pos.x(), pos.y());
 
     fPath = textPath;
     fEditPath = textPath;
@@ -134,31 +152,14 @@ WordRenderData::WordRenderData(TextBox * const parent) :
 
 void WordRenderData::initialize(const qreal relFrame,
                                 const QPointF &pos,
-                                const QString &word,
                                 const SkFont &font,
                                 const qreal letterSpacing,
                                 TextBox * const parent,
                                 Canvas * const scene) {
-    const auto parentM = parent->getInheritedTransformAtFrame(relFrame);
-    parent->BoundingBox::setupWithoutRasterEffects(
-                relFrame, parentM, this, scene);
-
     fOriginalPos = pos;
     fWordPos = pos;
-    qreal xPos = pos.x();
-
-    const qreal spacingAdd = static_cast<qreal>(font.getSize())*letterSpacing;
-
-    for(const auto& letterStr : word) {
-        const auto letter = enve::make_shared<LetterRenderData>(parent);
-        letter->initialize(relFrame, QPointF(xPos, pos.y()),
-                           letterStr, font, parent, scene);
-
-        fLetters << letter;
-
-        fChildrenRenderData << letter;
-        xPos += horizontalAdvance(font, letterStr) + spacingAdd;
-    }
+    const auto parentM = parent->getInheritedTransformAtFrame(relFrame);
+    parent->BoundingBox::setupRenderData(relFrame, parentM, this, scene);
 }
 
 void WordRenderData::applyTransform(const QMatrix &transform) {
@@ -189,6 +190,7 @@ void LineRenderData::initialize(const qreal relFrame,
                                 const SkFont &font,
                                 const qreal letterSpacing,
                                 const qreal wordSpacing,
+                                const bool isRTL,
                                 TextBox * const parent,
                                 Canvas * const scene) {
     fOriginalPos = pos;
@@ -197,34 +199,91 @@ void LineRenderData::initialize(const qreal relFrame,
     const auto parentM = parent->getInheritedTransformAtFrame(relFrame);
     parent->BoundingBox::setupRenderData(relFrame, parentM, this, scene);
 
-    qreal xPos = pos.x();
-    const qreal spaceX = horizontalAdvance(font, " ")*wordSpacing;
+    std::unique_ptr<SkShaper> shaper = SkShaper::Make();
+    if (!shaper) shaper = SkShaper::MakePrimitive();
 
-    const auto wordFinished =
-            [this, &xPos, &pos, &line, &font, parent, relFrame,
-            letterSpacing, scene](const int i0, const int i) {
-        const QString wordStr = line.mid(i0, i - i0 + 1);
-        const auto word = enve::make_shared<WordRenderData>(parent);
-        word->initialize(relFrame, QPointF(xPos, pos.y()), wordStr, font,
-                         letterSpacing, parent, scene);
-        fWords << word;
-        fChildrenRenderData << word;
-        xPos += horizontalAdvance(font, wordStr, letterSpacing);
+    if (line.isEmpty()) return;
+
+    class LineRunHandler : public SkShaper::RunHandler {
+        qreal fLetterSpacing;
+        qreal fWordSpacing;
+        SkFont fFont;
+        QPointF fStartPos;
+        qreal fCurrentX;
+        
+        TextBox* fParent;
+        LineRenderData* fLineData;
+        qreal fRelFrame;
+        Canvas* fScene;
+
+        stdsptr<WordRenderData> fCurrentWord;
+
+    public:
+        std::vector<SkGlyphID> fGlyphs;
+        std::vector<SkPoint> fPositions;
+        std::vector<uint32_t> fClusters;
+        QByteArray fUtf8;
+
+        LineRunHandler(qreal ls, qreal ws, const SkFont& font, QPointF startPos, TextBox* parent, LineRenderData* lineData, qreal relFrame, Canvas* scene, const QByteArray& utf8)
+            : fLetterSpacing(ls), fWordSpacing(ws), fFont(font), fStartPos(startPos), fCurrentX(startPos.x()), fParent(parent), fLineData(lineData), fRelFrame(relFrame), fScene(scene), fUtf8(utf8) {}
+
+        void beginLine() override {}
+        void runInfo(const RunInfo&) override {}
+        void commitRunInfo() override {}
+
+        Buffer runBuffer(const RunInfo& info) override {
+            fGlyphs.resize(info.glyphCount);
+            fPositions.resize(info.glyphCount);
+            fClusters.resize(info.glyphCount);
+            return {fGlyphs.data(), fPositions.data(), nullptr, fClusters.data(), {0, 0}};
+        }
+
+        void commitRunBuffer(const RunInfo& info) override {
+            const qreal fontSize = static_cast<qreal>(fFont.getSize());
+            const qreal lsOffset = fontSize * fLetterSpacing;
+            
+            const char spaceChar = ' ';
+            const SkScalar spaceAdvance = fFont.measureText(&spaceChar, sizeof(char), SkTextEncoding::kUTF8);
+
+            for (size_t i = 0; i < info.glyphCount; ++i) {
+                // Determine if this is a space based on the utf8 cluster
+                uint32_t cluster = fClusters[i];
+                bool isSpace = (cluster < fUtf8.size() && fUtf8[cluster] == ' ');
+
+                if (!fCurrentWord || isSpace) {
+                    fCurrentWord = enve::make_shared<WordRenderData>(fParent);
+                    fCurrentWord->initialize(fRelFrame, QPointF(fCurrentX, fStartPos.y()), fFont, fLetterSpacing, fParent, fScene);
+                    fLineData->fWords << fCurrentWord;
+                    fLineData->fChildrenRenderData << fCurrentWord;
+                }
+
+                if (!isSpace) {
+                    const auto letter = enve::make_shared<LetterRenderData>(fParent);
+                    letter->initialize(fRelFrame, QPointF(fCurrentX + fPositions[i].fX, fStartPos.y()), fGlyphs[i], fFont, fParent, fScene);
+                    fCurrentWord->fLetters << letter;
+                    fCurrentWord->fChildrenRenderData << letter;
+                }
+
+                qreal advanceX = 0;
+                if (i + 1 < info.glyphCount) {
+                    advanceX = fPositions[i+1].fX - fPositions[i].fX;
+                } else {
+                    advanceX = info.fAdvance.fX - fPositions[i].fX;
+                }
+
+                if (isSpace) {
+                    fCurrentX += advanceX + (spaceAdvance * (fWordSpacing - 1.0));
+                } else {
+                    fCurrentX += advanceX + lsOffset;
+                }
+            }
+        }
+        void commitLine() override {}
     };
 
-    int i0 = 0;
-    int nSpaces = 0;
-    for(int i = 0; i < line.length(); i++) {
-        if(line.at(i) == ' ') {
-            if(nSpaces == 0 && i != 0) wordFinished(i0, i - 1);
-            nSpaces++;
-            i0 = i + 1;
-            xPos += spaceX;
-            continue;
-        }
-        nSpaces = 0;
-    }
-    if(i0 < line.length()) wordFinished(i0, line.length() - 1);
+    QByteArray utf8 = line.toUtf8();
+    LineRunHandler runHandler(letterSpacing, wordSpacing, font, pos, parent, this, relFrame, scene, utf8);
+    shaper->shape(utf8.constData(), utf8.size(), font, !isRTL, SK_ScalarMax, &runHandler);
 }
 
 void LineRenderData::applyTransform(const QMatrix &transform) {
@@ -255,15 +314,19 @@ void TextBoxRenderData::initialize(const QString &text,
                                    const qreal lineSpacing,
                                    const Qt::Alignment hAlignment,
                                    const Qt::Alignment vAlignment,
+                                   const bool isRTL,
                                    TextBox * const parent,
                                    Canvas* const scene) {
     const QStringList lines = text.split(QRegExp("\n|\r\n|\r"));
 
     qreal maxWidth = 0;
 
+    std::unique_ptr<SkShaper> shaper = SkShaper::Make();
+    if (!shaper) shaper = SkShaper::MakePrimitive();
+
     for(const auto& line : lines) {
-        const qreal lineWidth = horizontalAdvance(font, line, letterSpacing,
-                                                  wordSpacing);
+        const qreal lineWidth = shapedHorizontalAdvance(font, line, letterSpacing,
+                                                        wordSpacing, isRTL, shaper.get());
         if(lineWidth > maxWidth) maxWidth = lineWidth;
     }
 
@@ -285,12 +348,12 @@ void TextBoxRenderData::initialize(const QString &text,
 
     qreal yPos = yTranslate;
     for(const auto& lineStr : lines) {
-        const qreal lineWidth = horizontalAdvance(font, lineStr, letterSpacing,
-                                                  wordSpacing);
+        const qreal lineWidth = shapedHorizontalAdvance(font, lineStr, letterSpacing,
+                                                        wordSpacing, isRTL, shaper.get());
         const qreal xPos = textLineX(hAlignment, lineWidth, maxWidth) + xTranslate;
         const auto line = enve::make_shared<LineRenderData>(parent);
         line->initialize(fRelFrame, QPointF(xPos, yPos), lineStr,
-                         font, letterSpacing, wordSpacing, parent, scene);
+                         font, letterSpacing, wordSpacing, isRTL, parent, scene);
         fLines << line;
         fChildrenRenderData << line;
         yPos += lineInc;

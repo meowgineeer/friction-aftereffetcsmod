@@ -50,7 +50,7 @@ public:
 
     void initialize(const qreal relFrame,
                     const QPointF &pos,
-                    const QString &letter,
+                    const SkGlyphID glyph,
                     const SkFont &font,
                     TextBox * const parent,
                     Canvas * const scene);
@@ -73,7 +73,6 @@ public:
 
     void initialize(const qreal relFrame,
                     const QPointF& pos,
-                    const QString& word,
                     const SkFont &font,
                     const qreal letterSpacing,
                     TextBox * const parent,
@@ -98,6 +97,7 @@ public:
                     const SkFont &font,
                     const qreal letterSpacing,
                     const qreal wordSpacing,
+                    const bool isRTL,
                     TextBox * const parent,
                     Canvas * const scene);
 
@@ -121,6 +121,7 @@ public:
                     const qreal lineSpacing,
                     const Qt::Alignment hAlignment,
                     const Qt::Alignment vAlignment,
+                    const bool isRTL,
                     TextBox * const parent,
                     Canvas * const scene);
 
