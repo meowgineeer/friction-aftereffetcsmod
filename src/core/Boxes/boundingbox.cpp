@@ -27,6 +27,7 @@
 #include "Boxes/containerbox.h"
 #include "TransformEffects/followpatheffect.h"
 #include "canvas.h"
+#include "ReadWrite/evformat.h"
 #include "camerabox.h"
 #include "swt_abstraction.h"
 #include "Timeline/durationrectangle.h"
