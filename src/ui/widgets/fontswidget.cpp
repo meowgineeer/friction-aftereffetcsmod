@@ -64,6 +64,15 @@ FontsWidget::FontsWidget(QWidget *parent,
     mFontSizeSlider->setDisplayedValue(72);
     mFontSizeSlider->setToolTip(tr("Font size"));
 
+    mTrackingSlider = new QDoubleSlider(-999, 999, 0, this, false);
+    mTrackingSlider->setMinimumWidth(20);
+    mTrackingSlider->setDisplayedValue(0);
+    mTrackingSlider->setToolTip(tr("Tracking"));
+
+    mLTRToggle = new QPushButton(tr("LTR/RTL"), this);
+    mLTRToggle->setCheckable(true);
+    mLTRToggle->setToolTip(tr("Toggle Text Direction"));
+
     mFontFamilyCombo->addItems(filterFonts());
 
     connect(mFontFamilyCombo, &QComboBox::currentTextChanged,
@@ -74,6 +83,12 @@ FontsWidget::FontsWidget(QWidget *parent,
 
     connect(mFontSizeSlider, &QDoubleSlider::valueEdited,
             this, &FontsWidget::emitSizeChanged);
+
+    connect(mTrackingSlider, &QDoubleSlider::valueEdited,
+            this, [this](qreal v){ emit trackingChanged(v); });
+
+    connect(mLTRToggle, &QPushButton::toggled,
+            this, [this](bool v){ emit ltrChanged(v); });
 
     QBoxLayout* mMainLayout;
     if (mToolbar) {
@@ -116,11 +131,21 @@ FontsWidget::FontsWidget(QWidget *parent,
         fontFamilyLayout->addWidget(mFontStyleCombo);
         fontFamilyLayout->addWidget(mFontSizeSlider);
 
+        QWidget *trackingWidget = new QWidget(this);
+        trackingWidget->setContentsMargins(0, 0, 0, 0);
+        QHBoxLayout *trackingLayout = new QHBoxLayout(trackingWidget);
+        trackingLayout->setMargin(0);
+        trackingLayout->addWidget(mLTRToggle);
+        trackingLayout->addWidget(mTrackingSlider);
+
         mMainLayout->addWidget(fontFamilyWidget);
+        mMainLayout->addWidget(trackingWidget);
     } else {
         mMainLayout->addWidget(mFontFamilyCombo);
         mMainLayout->addWidget(mFontStyleCombo);
         mMainLayout->addWidget(mFontSizeSlider);
+        mMainLayout->addWidget(mLTRToggle);
+        mMainLayout->addWidget(mTrackingSlider);
     }
 
     mAlignLeft = new QPushButton(QIcon::fromTheme("alignLeft"),
@@ -286,11 +311,15 @@ void FontsWidget::setCurrentBox(BoundingBox * const box)
     QString fontFamily;
     SkFontStyle fontStyle;
     QString fontText;
-    if (const auto tBox = enve_cast<TextBox*>(box)) {
+    qreal tracking = 0;
+    bool isRTL = false;
+    if (auto tBox = enve_cast<TextBox*>(box)) {
         fontSize = tBox->getFontSize();
         fontFamily = tBox->getFontFamily();
         fontStyle = tBox->getFontStyle();
         fontText = tBox->getCurrentValue();
+        tracking = tBox->getLetterSpacing();
+        isRTL = tBox->getIsRTL();
         setEnabled(true);
         setBoxTarget(tBox);
         setVisible(true);
@@ -303,7 +332,9 @@ void FontsWidget::setCurrentBox(BoundingBox * const box)
     setDisplayedSettings(fontSize,
                          fontFamily,
                          fontStyle,
-                         fontText);
+                         fontText,
+                         tracking,
+                         isRTL);
 }
 
 static QString styleStringHelper(const int weight,
@@ -345,7 +376,9 @@ static QString styleStringHelper(const int weight,
 void FontsWidget::setDisplayedSettings(const float size,
                                        const QString &family,
                                        const SkFontStyle &style,
-                                       const QString &text)
+                                       const QString &text,
+                                       const qreal tracking,
+                                       const bool isRTL)
 {
     mTextInput->blockSignals(true);
     mTextInput->setPlainText(text);
@@ -361,6 +394,10 @@ void FontsWidget::setDisplayedSettings(const float size,
     }
 
     mFontSizeSlider->setDisplayedValue(size);
+    mTrackingSlider->setDisplayedValue(tracking);
+    mLTRToggle->blockSignals(true);
+    mLTRToggle->setChecked(isRTL);
+    mLTRToggle->blockSignals(false);
     mBlockEmit--;
 }
 
@@ -430,13 +467,25 @@ void FontsWidget::setBoxTarget(TextBox * const target)
             target->setTextVAlignment(align);
             Document::sInstance->actionFinished();
         });
+        mBoxTarget << connect(this, &FontsWidget::trackingChanged,
+                              target, [target](const qreal &value) {
+            target->setLetterSpacing(value);
+            Document::sInstance->actionFinished();
+        });
+        mBoxTarget << connect(this, &FontsWidget::ltrChanged,
+                              target, [target](const bool &value) {
+            target->setIsRTL(value);
+            Document::sInstance->actionFinished();
+        });
         mBoxTarget << connect(target, &Property::prp_currentFrameChanged,
                               this, [this, target]() {
             if (mBlockTextUpdate) { return; }
             setDisplayedSettings(target->getFontSize(),
                                  target->getFontFamily(),
                                  target->getFontStyle(),
-                                 target->getCurrentValue());
+                                 target->getCurrentValue(),
+                                 target->getLetterSpacing(),
+                                 target->getIsRTL());
         });
     }
 }

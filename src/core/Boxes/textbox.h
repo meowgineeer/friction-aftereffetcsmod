@@ -55,9 +55,13 @@ public:
     void setTextVAlignment(const Qt::Alignment alignment);
 
     void setFont(const SkFont &font);
-    void setFontSize(const qreal size);
-    void setFontFamilyAndStyle(const QString &fontFamily,
-                               const SkFontStyle& style);
+    void setFontSize(qreal size);
+    qreal getLetterSpacing() const;
+    void setLetterSpacing(qreal spacing);
+    bool getIsRTL() const;
+    void setIsRTL(bool ltr);
+    void setFontFamilyAndStyle(const QString &family,
+                               const SkFontStyle &style);
 
     stdsptr<BoxRenderData> createRenderData();
     void setupRenderData(const qreal relFrame, const QMatrix& parentM,
@@ -94,6 +98,7 @@ private:
     qsptr<QrealAnimator> mLetterSpacing;
     qsptr<QrealAnimator> mWordSpacing;
     qsptr<QrealAnimator> mLineSpacing;
+    qsptr<BoolAnimator> mIsRTL;
 
     qsptr<QStringAnimator> mText;
     qsptr<TextEffectCollection> mTextEffects;

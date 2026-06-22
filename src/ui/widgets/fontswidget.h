@@ -60,7 +60,9 @@ namespace Friction
             void setDisplayedSettings(const float size,
                                       const QString &family,
                                       const SkFontStyle &style,
-                                      const QString &text = QString());
+                                      const QString &text = QString(),
+                                      const qreal tracking = 0,
+                                      const bool isRTL = false);
             void setText(const QString &text);
             const QString getText();
             void setTextFocus();
@@ -75,6 +77,8 @@ namespace Friction
             void textAlignmentChanged(Qt::Alignment alignment);
             void textVAlignmentChanged(Qt::Alignment alignment);
             void textChanged(const QString &text);
+            void trackingChanged(qreal tracking);
+            void ltrChanged(bool ltr);
 
         private:
             void updateStyles();
@@ -94,6 +98,8 @@ namespace Friction
             QComboBox *mFontFamilyCombo;
             QComboBox *mFontStyleCombo;
             QDoubleSlider *mFontSizeSlider;
+            QDoubleSlider *mTrackingSlider;
+            QPushButton *mLTRToggle;
 
             QPushButton *mAlignLeft;
             QPushButton *mAlignCenter;

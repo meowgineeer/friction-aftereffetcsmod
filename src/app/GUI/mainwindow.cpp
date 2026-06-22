@@ -1014,7 +1014,7 @@ void MainWindow::setupPropertiesWidgets()
 
     mTabPropertiesIndex = mTabProperties->addTab(propertiesWidget,
                                                  QIcon::fromTheme("drawPathAutoChecked"),
-                                                 tr("Properties"));
+                                                 tr("Character"));
     mTabAssetsIndex = mTabProperties->addTab(assets,
                                              QIcon::fromTheme("asset_manager"),
                                              tr("Assets"));
@@ -1066,7 +1066,7 @@ void MainWindow::setupLayout()
                      false});
     docks.push_back({UIDock::Position::Right,
                      -1,
-                     tr("Properties"),
+                     tr("Character"),
                      mTabProperties,
                      false,
                      true,

@@ -58,10 +58,12 @@ TextBox::TextBox()
     mLetterSpacing = enve::make_shared<QrealAnimator>(0, -100, 100, 0.1, "letters");
     mWordSpacing = enve::make_shared<QrealAnimator>(1, -100, 100, 0.1, "words");
     mLineSpacing = enve::make_shared<QrealAnimator>(1, -100, 100, 0.1, "lines");
+    mIsRTL = enve::make_shared<BoolAnimator>(false, "Right-to-Left");
 
     mSpacingCont->ca_addChild(mLetterSpacing);
     mSpacingCont->ca_addChild(mWordSpacing);
     mSpacingCont->ca_addChild(mLineSpacing);
+    mSpacingCont->ca_addChild(mIsRTL);
 
     ca_prependChild(mRasterEffectsAnimators.data(), mSpacingCont);
 
@@ -70,6 +72,8 @@ TextBox::TextBox()
     connect(mWordSpacing.get(), &Property::prp_currentFrameChanged,
             this, pathsUpdater);
     connect(mLineSpacing.get(), &Property::prp_currentFrameChanged,
+            this, pathsUpdater);
+    connect(mIsRTL.get(), &Property::prp_currentFrameChanged,
             this, pathsUpdater);
 
     mTextEffects = enve::make_shared<TextEffectCollection>();
@@ -177,6 +181,26 @@ void TextBox::setFontSize(const qreal size)
         prp_addUndoRedo(ur);
     }
     setFont(mFont.makeWithSize(size));
+}
+
+qreal TextBox::getLetterSpacing() const {
+    return mLetterSpacing->getCurrentValue();
+}
+
+void TextBox::setLetterSpacing(qreal spacing) {
+    mLetterSpacing->prp_startTransform();
+    mLetterSpacing->setCurrentValue(spacing);
+    mLetterSpacing->prp_finishTransform();
+}
+
+bool TextBox::getIsRTL() const {
+    return mIsRTL->getCurrentValue();
+}
+
+void TextBox::setIsRTL(bool ltr) {
+    mIsRTL->prp_startTransform();
+    mIsRTL->setCurrentValue(ltr);
+    mIsRTL->prp_finishTransform();
 }
 
 void TextBox::setFontFamilyAndStyle(const QString &fontFamily,
