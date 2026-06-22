@@ -115,6 +115,7 @@ void BoundingBox::writeBoundingBox(eWriteStream& dst) const {
     eBoxOrSound::prp_writeProperty_impl(dst);
     dst << mWriteId;
     dst.write(&mBlendMode, sizeof(SkBlendMode));
+    dst.write(&mTrackMatte, sizeof(TrackMatte));
 }
 
 void BoundingBox::readBoundingBox(eReadStream& src) {
@@ -125,6 +126,9 @@ void BoundingBox::readBoundingBox(eReadStream& src) {
     }
     int readId; src >> readId;
     src.read(&mBlendMode, sizeof(SkBlendMode));
+    if(src.evFileVersion() >= EvFormat::trackMatte) {
+        src.read(&mTrackMatte, sizeof(TrackMatte));
+    }
 
     src.addReadBox(readId, this);
 }

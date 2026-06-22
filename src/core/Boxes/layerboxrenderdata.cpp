@@ -83,16 +83,61 @@ void ContainerBoxRenderData::drawSk(SkCanvas * const canvas) {
         }
         canvas->setMatrix(transform);
     }
-    for(const auto &child : fChildrenRenderData) {
-        canvas->save();
-        if(!child.fClip.fClipOps.isEmpty()) {
-            const SkMatrix transform = canvas->getTotalMatrix();
-            canvas->concat(toSkMatrix(fResolutionScale));
-            child.fClip.clip(canvas);
-            canvas->setMatrix(transform);
+    for(int i = 0; i < fChildrenRenderData.size(); ++i) {
+        const auto &child = fChildrenRenderData.at(i);
+        
+        auto matteType = TrackMatte::None;
+        if (child.fData && child.fData->fBlendEffectIdentifier) {
+            matteType = child.fData->fBlendEffectIdentifier->getTrackMatte();
         }
-        child->drawOnParentLayer(canvas);
-        canvas->restore();
+        
+        if (matteType != TrackMatte::None && i + 1 < fChildrenRenderData.size()) {
+            const auto& matteChild = fChildrenRenderData.at(i + 1);
+            
+            canvas->saveLayer(nullptr, nullptr);
+            
+            // 1. Draw target (masked layer)
+            canvas->save();
+            if(!child.fClip.fClipOps.isEmpty()) {
+                const SkMatrix transform = canvas->getTotalMatrix();
+                canvas->concat(toSkMatrix(fResolutionScale));
+                child.fClip.clip(canvas);
+                canvas->setMatrix(transform);
+            }
+            child->drawOnParentLayer(canvas);
+            canvas->restore();
+            
+            // 2. Setup matte paint
+            SkPaint mattePaint;
+            if (matteType == TrackMatte::Alpha || matteType == TrackMatte::Luma) {
+                mattePaint.setBlendMode(SkBlendMode::kDstIn);
+            } else {
+                mattePaint.setBlendMode(SkBlendMode::kDstOut);
+            }
+            
+            if (matteType == TrackMatte::Luma || matteType == TrackMatte::LumaInverted) {
+                mattePaint.setColorFilter(SkLumaColorFilter::Make());
+            }
+            
+            // 3. Draw matte layer
+            canvas->saveLayer(nullptr, &mattePaint);
+            matteChild->drawOnParentLayer(canvas);
+            canvas->restore();
+            
+            canvas->restore(); // End matte compositing
+            
+            ++i; // Skip drawing matte layer again
+        } else {
+            canvas->save();
+            if(!child.fClip.fClipOps.isEmpty()) {
+                const SkMatrix transform = canvas->getTotalMatrix();
+                canvas->concat(toSkMatrix(fResolutionScale));
+                child.fClip.clip(canvas);
+                canvas->setMatrix(transform);
+            }
+            child->drawOnParentLayer(canvas);
+            canvas->restore();
+        }
     }
     canvas->restore();
 }

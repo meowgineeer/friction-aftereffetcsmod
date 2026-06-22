@@ -278,6 +278,14 @@ BoxSingleWidget::BoxSingleWidget(BoxScroller * const parent)
     mMainLayout->addWidget(mBlendModeCombo);
     mBlendModeCombo->setObjectName("blendModeCombo");
 
+    mTrackMatteCombo = createCombo(this);
+    mMainLayout->addWidget(mTrackMatteCombo);
+    mTrackMatteCombo->setObjectName("trackMatteCombo");
+    mTrackMatteCombo->addItems(QStringList() << "No Matte" << "Alpha Matte" << "Alpha Inverted" << "Luma Matte" << "Luma Inverted");
+    connect(mTrackMatteCombo, qOverload<int>(&QComboBox::activated),
+            this, &BoxSingleWidget::setTrackMatte);
+    mTrackMatteCombo->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Minimum);
+
     for(int modeId = int(SkBlendMode::kSrcOver);
         modeId <= int(SkBlendMode::kLastMode); modeId++) {
         const auto mode = static_cast<SkBlendMode>(modeId);
@@ -346,6 +354,17 @@ void BoxSingleWidget::setCompositionMode(const int id) {
         const int modeId = mBlendModeCombo->itemData(id).toInt();
         const auto mode = static_cast<SkBlendMode>(modeId);
         boxTarget->setBlendModeSk(mode);
+    }
+    Document::sInstance->actionFinished();
+}
+
+void BoxSingleWidget::setTrackMatte(const int id) {
+    if(!mTarget) return;
+    const auto target = mTarget->getTarget();
+
+    if(const auto boxTarget = enve_cast<BoundingBox*>(target)) {
+        const auto matte = static_cast<TrackMatte>(id);
+        boxTarget->setTrackMatte(matte);
     }
     Document::sInstance->actionFinished();
 }
@@ -492,6 +511,7 @@ void BoxSingleWidget::setTargetAbstraction(SWT_Abstraction *abs) {
 
     if(boundingBox) {
         mBlendModeVisible = true;
+        mTrackMatteVisible = true;
         const auto blendName = SkBlendMode_Name(boundingBox->getBlendMode());
         mBlendModeCombo->setCurrentText(blendName);
         mBlendModeCombo->setEnabled(!boundingBox->isGroup());
@@ -499,6 +519,8 @@ void BoxSingleWidget::setTargetAbstraction(SWT_Abstraction *abs) {
                                this, [this](const SkBlendMode mode) {
             mBlendModeCombo->setCurrentText(SkBlendMode_Name(mode));
         });
+        mTrackMatteCombo->setCurrentIndex(static_cast<int>(boundingBox->getTrackMatte()));
+        mTrackMatteCombo->setEnabled(!boundingBox->isGroup());
     } else if(enve_cast<eSoundObjectBase*>(prop)) {
     } else if(boolProperty) {
         mCheckBox->setTarget(boolProperty);
@@ -1022,9 +1044,16 @@ void BoxSingleWidget::updatePathCompositionBoxVisible() {
 
 void BoxSingleWidget::updateCompositionBoxVisible() {
     if(!mTarget) return;
-    if(mBlendModeVisible && width() - mFillWidget->x() > 10*eSizesUI::widget) {
+    if(mBlendModeVisible && width() - mFillWidget->x() > 15*eSizesUI::widget) {
         mBlendModeCombo->show();
     } else mBlendModeCombo->hide();
+}
+
+void BoxSingleWidget::updateTrackMatteBoxVisible() {
+    if(!mTarget) return;
+    if(mTrackMatteVisible && width() - mFillWidget->x() > 10*eSizesUI::widget) {
+        mTrackMatteCombo->show();
+    } else mTrackMatteCombo->hide();
 }
 
 void BoxSingleWidget::updateFillTypeBoxVisible() {
@@ -1036,6 +1065,7 @@ void BoxSingleWidget::updateFillTypeBoxVisible() {
 
 void BoxSingleWidget::resizeEvent(QResizeEvent *) {
     updateCompositionBoxVisible();
+    updateTrackMatteBoxVisible();
     updatePathCompositionBoxVisible();
     updateFillTypeBoxVisible();
     updateValueSlidersForQPointFAnimator();

@@ -120,12 +120,14 @@ protected:
     QRect mVisibilityRect;
 
     bool mBlendModeVisible = false;
+    bool mTrackMatteVisible = false;
     bool mPathBlendModeVisible = false;
     bool mFillTypeVisible = false;
 
     void updatePathCompositionBoxVisible();
     void updateCompositionBoxVisible();
     void updateFillTypeBoxVisible();
+    void updateTrackMatteBoxVisible();
 
     void clearAndHideValueAnimators();
     void updateValueSlidersForQPointFAnimator();
@@ -141,6 +143,7 @@ private:
     void setCompositionMode(const int id);
     void setPathCompositionMode(const int id);
     void setFillType(const int id);
+    void setTrackMatte(const int id);
     ColorAnimator* getColorTarget() const;
 
     void setComboProperty(ComboBoxProperty * const combo);
@@ -171,6 +174,7 @@ private:
     PixmapActionButton *mPromoteToLayerButton;
     eComboBox *mPropertyComboBox;
     eComboBox *mBlendModeCombo;
+    eComboBox *mTrackMatteCombo;
     eComboBox *mPathBlendModeCombo;
     eComboBox *mFillTypeCombo;
 
