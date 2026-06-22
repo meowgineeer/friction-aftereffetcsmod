@@ -28,6 +28,9 @@
 #include "Boxes/pathbox.h"
 #include "skia/skiaincludes.h"
 #include "../Animators/texteffectcollection.h"
+#include "Animators/staticcomplexanimator.h"
+#include "Animators/boolanimator.h"
+#include "Animators/qrealanimator.h"
 class QStringAnimator;
 
 enum class TextFragmentType : short {

@@ -26,6 +26,8 @@
 #include "Boxes/textbox.h"
 #include <QInputDialog>
 #include <QMenu>
+#include <QApplication>
+#include <QDesktopWidget>
 #include "canvas.h"
 #include "Animators/gradientpoints.h"
 #include "Animators/qstringanimator.h"
@@ -38,7 +40,6 @@
 #include "ReadWrite/evformat.h"
 #include "svgexporter.h"
 #include "Private/esettings.h"
-
 #include "modules/skshaper/include/SkShaper.h"
 
 class PathRunHandler : public SkShaper::RunHandler {
@@ -111,8 +112,6 @@ TextBox::TextBox()
     ca_prependChild(mRasterEffectsAnimators.data(), mTextEffects);
 }
 
-#include <QApplication>
-#include <QDesktopWidget>
 
 void TextBox::openTextEditor(QWidget* dialogParent) {
     /*bool ok;
