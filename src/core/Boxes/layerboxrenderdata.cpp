@@ -23,11 +23,11 @@
 
 // Fork of enve - Copyright (C) 2016-2020 Maurycy Liebner
 
-#include "Boxes/layerboxrenderdata.h"
-#include "canvas.h"
-#include "Boxes/boundingbox.h"
-#include "include/effects/SkLumaColorFilter.h"
+#include "layerboxrenderdata.h"
+#include "boundingbox.h"
+#include "pointhelpers.h"
 #include "skia/skqtconversions.h"
+#include "include/effects/SkLumaColorFilter.h"
 
 ContainerBoxRenderData::ContainerBoxRenderData(BoundingBox * const parentBox) :
     BoxRenderData(parentBox) {
@@ -38,7 +38,7 @@ void ContainerBoxRenderData::transformRenderCanvas(SkCanvas &canvas) const {
     canvas.translate(toSkScalar(-fGlobalRect.x()),
                      toSkScalar(-fGlobalRect.y()));
 }
-#include "pointhelpers.h"
+
 void ContainerBoxRenderData::updateRelBoundingRect() {
     fRelBoundingRect = QRectF();
     const auto invTrans = fTotalTransform.inverted();
