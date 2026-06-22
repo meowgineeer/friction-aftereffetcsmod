@@ -23,7 +23,10 @@
 
 // Fork of enve - Copyright (C) 2016-2020 Maurycy Liebner
 
-#include "layerboxrenderdata.h"
+#include "Boxes/layerboxrenderdata.h"
+#include "canvas.h"
+#include "Boxes/boundingbox.h"
+#include "include/effects/SkLumaColorFilter.h"
 #include "skia/skqtconversions.h"
 
 ContainerBoxRenderData::ContainerBoxRenderData(BoundingBox * const parentBox) :
