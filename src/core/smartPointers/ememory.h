@@ -29,6 +29,7 @@
 #include "stdpointer.h"
 #include "stdselfref.h"
 #include "selfref.h"
+#include <type_traits>
 
 #define enve_cast enve::cast
 
